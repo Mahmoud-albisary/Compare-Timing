@@ -15,6 +15,7 @@ __global__ void addVectors(const float* a, const float* b, float* c, int N) {
 		c[idx] = a[idx] + b[idx];
 	}
 }
+
 int main() {
 	vector<int> nums = { 1000000, 10000000, 100000000 };
 	int deviceCount = 0;
@@ -83,6 +84,32 @@ int main() {
 		
 		row.push_back(to_string(milliseconds) + " ms");
 	}
+	results.push_back(row);
+	
+	row = { "CPU" };
+	for(int N : nums) {
+		vector<float> x(N), y(N), z(N);
+		
+		for(int i = 0; i < N; i++) {
+			x[i] = 2.0;
+			y[i] = 3.0;
+		}
+		
+		for(int i = 0; i<N; i++){
+			z[i] = x[i] + y[i];
+		}
+
+		chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
+		for(int i = 0; i<N; i++){
+			z[i] = x[i] + y[i];
+		}
+		chrono::high_resolution_clock::time_point end = chrono::high_resolution_clock::now();
+		auto duration = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+		cout << "CPU Time for " << N << " elements: " << duration << " ms" << endl;
+
+		row.push_back(to_string(duration) + " ms");
+	}
+
 	results.push_back(row);
 	ofstream outFile("cuda_results.csv");
 	for (const auto& r : results) {
