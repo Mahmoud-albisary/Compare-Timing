@@ -17,7 +17,7 @@ __global__ void addVectors(const float* a, const float* b, float* c, int N) {
 }
 
 int main() {
-	vector<int> nums = { 1000000, 10000000, 100000000 };
+	vector<int> nums = { 1000000, 10000000, 100000000 }; // 1 million, 10 million, 100 million
 	int deviceCount = 0;
 	int threadsPerBlock = 256;
 	vector<vector<string>> results = { {"Device", "1 M", "10 M", "100M"}};
@@ -50,16 +50,16 @@ int main() {
 		cudaEventCreate(&start);
 		cudaEventCreate(&stop);
 
-		addVectors << <blocksPerGrid, threadsPerBlock >> > (a, b, c, N);
+		addVectors << <blocksPerGrid, threadsPerBlock >> > (a, b, c, N); // Here we do a warm-up run to avoid including any setup overhead in timing (runtime is not measured here)
 
 		cudaDeviceSynchronize();
 
 
-		cudaEventRecord(start);
+		cudaEventRecord(start); // Start timing
 
-		addVectors << <blocksPerGrid, threadsPerBlock >> > (a, b, c, N);
+		addVectors << <blocksPerGrid, threadsPerBlock >> > (a, b, c, N); // Actual timed run
 
-		cudaEventRecord(stop);
+		cudaEventRecord(stop);	// End timing
 		cudaEventSynchronize(stop);
 
 		float milliseconds = 0;
@@ -96,14 +96,14 @@ int main() {
 		}
 		
 		for(int i = 0; i<N; i++){
-			z[i] = x[i] + y[i];
+			z[i] = x[i] + y[i];     // Here we do a warm-up run to avoid including any setup overhead in timing (runtime is not measured here)
 		}
 
-		chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
+		chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now(); // Start timing
 		for(int i = 0; i<N; i++){
-			z[i] = x[i] + y[i];
+			z[i] = x[i] + y[i];  // Actual timed run
 		}
-		chrono::high_resolution_clock::time_point end = chrono::high_resolution_clock::now();
+		chrono::high_resolution_clock::time_point end = chrono::high_resolution_clock::now();	// End timing
 		auto duration = chrono::duration_cast<chrono::milliseconds>(end - start).count();
 		cout << "CPU Time for " << N << " elements: " << duration << " ms" << endl;
 
@@ -111,6 +111,8 @@ int main() {
 	}
 
 	results.push_back(row);
+
+	// Write results to CSV
 	ofstream outFile("cuda_results.csv");
 	for (const auto& r : results) {
 		for (size_t i = 0; i < r.size(); ++i) {
